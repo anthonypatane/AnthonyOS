@@ -1,0 +1,261 @@
+{
+    "progression": {
+      "increments": {
+        "default": 5,
+        "machine": 10,
+        "cable": 5,
+        "dumbbell": 5,
+        "barbell": 5
+      }
+    },
+  
+    "schedule": {
+      "monday": ["chest_triceps"],
+      "tuesday": ["back_biceps"],
+      "wednesday": ["shoulders_abs"],
+      "thursday": ["legs"],
+      "friday": ["upper_body"],
+      "saturday": ["athlete_day", "abs"],
+      "sunday": []
+    },
+  
+   "exercises": {
+  "smith_incline_press": {
+    "name": "Smith Machine Incline Press",
+    "equipment": "barbell",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "supine_press": {
+    "name": "Supine Press",
+    "equipment": "machine",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "pec_deck": {
+    "name": "Pec Deck",
+    "equipment": "machine",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "incline_chest_press_machine": {
+    "name": "Incline Chest Press Machine",
+    "equipment": "machine",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "triceps_pushdown": {
+    "name": "Triceps Pushdown",
+    "equipment": "cable",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "reverse_triceps_extension": {
+    "name": "Reverse Triceps Extension",
+    "equipment": "cable",
+    "load": "total",
+    "metric": "reps"
+  },
+
+  "cable_fly_low_to_high": {
+    "name": "Cable Fly Low to High",
+    "equipment": "cable",
+    "load": "total",
+    "metric": "reps"
+  }
+},
+  
+    "workouts": {
+  "chest_triceps": {
+    "name": "Chest + Triceps",
+    "type": "strength",
+    "blocks": [
+      {
+        "exercise": "smith_incline_press",
+        "sets": 4,
+        "target": {
+          "min": 6,
+          "max": 10
+        }
+      },
+      {
+        "exercise": "supine_press",
+        "sets": 3,
+        "target": {
+          "min": 6,
+          "max": 10
+        }
+      },
+      {
+        "exercise": "pec_deck",
+        "sets": 3,
+        "target": {
+          "min": 12,
+          "max": 15
+        }
+      },
+      {
+        "exercise": "incline_chest_press_machine",
+        "sets": 3,
+        "target": {
+          "min": 12,
+          "max": 15
+        }
+      },
+      {
+        "exercise": "triceps_pushdown",
+        "sets": 3,
+        "target": {
+          "min": 10,
+          "max": 15
+        }
+      },
+      {
+        "exercise": "reverse_triceps_extension",
+        "sets": 3,
+        "target": {
+          "min": 10,
+          "max": 13
+        }
+      },
+      {
+        "exercise": "cable_fly_low_to_high",
+        "sets": 3,
+        "target": {
+          "min": 12,
+          "max": 15
+        }
+      }
+    ]
+  }
+},
+  
+    "log": [
+  {
+    "date": "2026-06-24",
+    "workout": "chest_triceps",
+    "exercise": "smith_incline_press",
+    "sets": [
+      {
+        "weight": 90,
+        "reps": 8
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "smith_incline_press",
+    "sets": [
+      {
+        "weight": 90,
+        "reps": 8
+      }
+    ]
+  },
+  {
+    "date": "2026-06-24",
+    "workout": "chest_triceps",
+    "exercise": "supine_press",
+    "sets": [
+      {
+        "weight": 150,
+        "reps": 6
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "supine_press",
+    "sets": [
+      {
+        "weight": 150,
+        "reps": 9
+      }
+    ]
+  },
+  {
+    "date": "2026-06-24",
+    "workout": "chest_triceps",
+    "exercise": "pec_deck",
+    "sets": [
+      {
+        "weight": 125,
+        "reps": 10
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "pec_deck",
+    "sets": [
+      {
+        "weight": 120,
+        "reps": 12
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "incline_chest_press_machine",
+    "sets": [
+      {
+        "weight": 40,
+        "reps": 18
+      }
+    ]
+  },
+  {
+    "date": "2026-06-24",
+    "workout": "chest_triceps",
+    "exercise": "triceps_pushdown",
+    "sets": [
+      {
+        "weight": 135,
+        "reps": 12
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "triceps_pushdown",
+    "sets": [
+      {
+        "weight": 57,
+        "reps": 15
+      }
+    ]
+  },
+  {
+    "date": "2026-06-24",
+    "workout": "chest_triceps",
+    "exercise": "reverse_triceps_extension",
+    "sets": [
+      {
+        "weight": 120,
+        "reps": 12
+      }
+    ]
+  },
+  {
+    "date": "2026-07-07",
+    "workout": "chest_triceps",
+    "exercise": "reverse_triceps_extension",
+    "sets": [
+      {
+        "weight": 35,
+        "reps": 13
+      }
+    ]
+  }
+]
+  }
