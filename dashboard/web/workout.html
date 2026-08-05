@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Workout | Anthony OS</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="../../scripts/progression.js" defer></script>
+    <script src="../../scripts/workout-storage.js" defer></script>
+    <script src="workout.js" defer></script>
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="title-section">
+            <h1 id="workout-title">
+                Workout
+            </h1>
+
+            <p class="subtitle">
+                Anthony OS Workout Logger
+            </p>
+        </div>
+
+        <div id="clock-container">
+
+            <div id="timer">
+                00:00:00
+            </div>
+
+            <div class="workout-controls">
+                <button id="start-workout">
+                    Start Workout
+                </button>
+
+                <button id="finish-workout" disabled>
+                    Finish Workout
+                </button>
+            </div>
+
+        </div>
+
+    </header>
+
+    <main id="exercise-list">
+
+    </main>
+
+    <section id="workout-summary" class="card" hidden>
+        <h2>Workout Complete ✅</h2>
+
+        <p id="summary-workout-name">
+            Workout
+        </p>
+
+        <div class="summary-grid">
+
+            <div>
+                <strong>Duration</strong>
+                <p id="summary-duration">
+                    00:00:00
+                </p>
+            </div>
+
+            <div>
+                <strong>Exercises</strong>
+                <p id="summary-exercises">
+                    0
+                </p>
+            </div>
+
+            <div>
+                <strong>Sets Completed</strong>
+                <p id="summary-sets">
+                    0
+                </p>
+            </div>
+
+            <div>
+                <strong>Total Volume</strong>
+                <p id="summary-volume">
+                    0 lb
+                </p>
+            </div>
+
+            <div>
+                <strong>Calories</strong>
+                <p>
+                    Coming Soon
+                </p>
+            </div>
+
+            <div>
+                <strong>Heart Rate</strong>
+                <p>
+                    Coming Soon
+                </p>
+            </div>
+
+        </div>
+
+        <button id="save-workout">
+            Save Workout
+        </button>
+    </section>
+
+</body>
+
+</html>
