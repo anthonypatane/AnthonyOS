@@ -108,3 +108,27 @@ async function loadWorkoutCard() {
 }
 
 loadWorkoutCard();
+(async () => {
+    const today = await AnthonyCore.getToday();
+
+    console.log(today);
+
+    const proteinCard = document.getElementById("protein-value");
+    const waterCard = document.getElementById("water-value");
+    const stepsCard = document.getElementById("steps-value");
+
+    if (proteinCard) {
+        proteinCard.textContent =
+            `${today.nutrition.protein} / ${today.nutrition.proteinGoal} g`;
+    }
+
+    if (waterCard) {
+        waterCard.textContent =
+            `${today.nutrition.waterLiters} / ${today.nutrition.waterGoalLiters} L`;
+    }
+
+    if (stepsCard) {
+        stepsCard.textContent =
+            `${today.health.steps.toLocaleString()} / 10,000`;
+    }
+})();
