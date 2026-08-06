@@ -1,14 +1,20 @@
 {
   "progression": {
+    "method": "double_progression",
+    "repsInReserve": {
+      "min": 1,
+      "max": 3
+    },
     "increments": {
       "default": 5,
       "machine": 10,
       "cable": 5,
       "dumbbell": 5,
-      "barbell": 5
+      "barbell": 5,
+      "plate_loaded_machine": 10,
+      "bodyweight": 0
     }
   },
-
   "schedule": {
     "monday": ["chest_triceps"],
     "tuesday": ["back_biceps"],
@@ -18,7 +24,6 @@
     "saturday": ["athlete_day", "abs"],
     "sunday": []
   },
-
   "exercises": {
     "smith_incline_press": {
       "name": "Smith Machine Incline Press",
@@ -62,6 +67,60 @@
       "load": "total",
       "metric": "reps"
     },
+    "lat_pulldown": {
+      "name": "Lat Pulldown",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
+    "straight_arm_pulldown": {
+      "name": "Straight Arm Pulldown",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
+    "single_arm_row": {
+      "name": "Single Arm Row",
+      "equipment": "machine",
+      "load": "per_side",
+      "metric": "reps"
+    },
+    "back_extension_machine": {
+      "name": "Back Extension Machine",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "pull_ups": {
+      "name": "Pull-Ups",
+      "equipment": "bodyweight",
+      "load": "bodyweight",
+      "metric": "reps"
+    },
+    "preacher_curl": {
+      "name": "Preacher Curl",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "cable_biceps_curl": {
+      "name": "Cable Biceps Curl",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
+    "hammer_curl": {
+      "name": "Hammer Curl",
+      "equipment": "dumbbell",
+      "load": "per_hand",
+      "metric": "reps"
+    },
+    "cable_lateral_front_raise": {
+      "name": "Cable Lateral Front Raise",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
     "db_shoulder_press": {
       "name": "Dumbbell Shoulder Press",
       "equipment": "dumbbell",
@@ -77,12 +136,6 @@
     "rear_delt_fly_machine": {
       "name": "Rear Delt Fly Machine",
       "equipment": "machine",
-      "load": "total",
-      "metric": "reps"
-    },
-    "cable_lateral_front_raise": {
-      "name": "Cable Lateral Front Raise",
-      "equipment": "cable",
       "load": "total",
       "metric": "reps"
     },
@@ -103,9 +156,98 @@
       "equipment": "bodyweight",
       "load": "bodyweight",
       "metric": "seconds"
+    },
+    "leg_extension": {
+      "name": "Leg Extension",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "leg_press": {
+      "name": "Leg Press",
+      "equipment": "plate_loaded_machine",
+      "load": "per_side",
+      "metric": "reps"
+    },
+    "hack_squat": {
+      "name": "Hack Squat",
+      "equipment": "plate_loaded_machine",
+      "load": "per_side",
+      "metric": "reps"
+    },
+    "hamstring_curl_machine": {
+      "name": "Hamstring Curl Machine",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "hip_abduction_out": {
+      "name": "Hip Abduction Out",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "hip_abduction_in": {
+      "name": "Hip Abduction In",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "calf_raise": {
+      "name": "Calf Raise",
+      "equipment": "machine",
+      "load": "total",
+      "metric": "reps"
+    },
+    "incline_bench_press": {
+      "name": "Incline Bench Press",
+      "equipment": "barbell",
+      "load": "total",
+      "metric": "reps"
+    },
+    "wide_grip_cable_row": {
+      "name": "Wide Grip Cable Row",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
+    "lateral_raise": {
+      "name": "Lateral Raise",
+      "equipment": "dumbbell",
+      "load": "per_hand",
+      "metric": "reps"
+    },
+    "rope_pushdown": {
+      "name": "Rope Pushdown",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
+    },
+    "ab_wheel": {
+      "name": "Ab Wheel",
+      "equipment": "bodyweight",
+      "load": "bodyweight",
+      "metric": "reps"
+    },
+    "reverse_crunch": {
+      "name": "Reverse Crunch",
+      "equipment": "bodyweight",
+      "load": "bodyweight",
+      "metric": "reps"
+    },
+    "hanging_knee_raise": {
+      "name": "Hanging Knee Raise",
+      "equipment": "bodyweight",
+      "load": "bodyweight",
+      "metric": "reps"
+    },
+    "cable_crunch": {
+      "name": "Cable Crunch",
+      "equipment": "cable",
+      "load": "total",
+      "metric": "reps"
     }
   },
-
   "workouts": {
     "chest_triceps": {
       "name": "Chest + Triceps",
@@ -120,7 +262,20 @@
         { "exercise": "cable_fly_low_to_high", "sets": 3, "target": { "min": 12, "max": 15 } }
       ]
     },
-
+    "back_biceps": {
+      "name": "Back + Biceps",
+      "type": "strength",
+      "blocks": [
+        { "exercise": "lat_pulldown", "sets": 4, "target": { "min": 8, "max": 12 } },
+        { "exercise": "straight_arm_pulldown", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "single_arm_row", "sets": 3, "target": { "min": 10, "max": 12 } },
+        { "exercise": "back_extension_machine", "sets": 3, "target": { "min": 15, "max": 15 } },
+        { "exercise": "pull_ups", "sets": 3, "target": { "min": 6, "max": 12 } },
+        { "exercise": "preacher_curl", "sets": 3, "target": { "min": 10, "max": 12 } },
+        { "exercise": "cable_biceps_curl", "sets": 3, "target": { "min": 10, "max": 12 } },
+        { "exercise": "hammer_curl", "sets": 3, "target": { "min": 10, "max": 12 } }
+      ]
+    },
     "shoulders_abs": {
       "name": "Shoulders + Abs",
       "type": "strength",
@@ -133,9 +288,83 @@
         { "exercise": "power_tower_leg_lifts", "sets": 3, "target": { "min": 15, "max": 20 } },
         { "exercise": "plank", "sets": 3, "target": { "min": 60, "max": 60 } }
       ]
+    },
+    "legs": {
+      "name": "Legs",
+      "type": "strength",
+      "blocks": [
+        { "exercise": "leg_extension", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "leg_press", "sets": 4, "target": { "min": 10, "max": 12 } },
+        { "exercise": "hack_squat", "sets": 4, "target": { "min": 8, "max": 12 } },
+        { "exercise": "hamstring_curl_machine", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "hip_abduction_out", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "hip_abduction_in", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "calf_raise", "sets": 4, "target": { "min": 15, "max": 20 } }
+      ]
+    },
+    "upper_body": {
+      "name": "Upper Body",
+      "type": "strength",
+      "blocks": [
+        { "exercise": "incline_bench_press", "sets": 4, "target": { "min": 8, "max": 10 } },
+        { "exercise": "wide_grip_cable_row", "sets": 3, "target": { "min": 10, "max": 12 } },
+        { "exercise": "lat_pulldown", "sets": 4, "target": { "min": 8, "max": 12 } },
+        { "exercise": "db_shoulder_press", "sets": 3, "target": { "min": 8, "max": 10 } },
+        { "exercise": "lateral_raise", "sets": 3, "target": { "min": 12, "max": 15 } },
+        { "exercise": "rope_pushdown", "sets": 3, "target": { "min": 10, "max": 15 } },
+        { "exercise": "hammer_curl", "sets": 3, "target": { "min": 10, "max": 12 } }
+      ]
+    },
+    "abs": {
+      "name": "Abs",
+      "type": "strength",
+      "blocks": [
+        { "exercise": "ab_wheel", "sets": 3, "target": { "min": 10, "max": 10 } },
+        { "exercise": "reverse_crunch", "sets": 3, "target": { "min": 15, "max": 15 } },
+        { "exercise": "hanging_knee_raise", "sets": 3, "target": { "min": 15, "max": 15 } },
+        { "exercise": "cable_crunch", "sets": 3, "target": { "min": 15, "max": 15 } },
+        { "exercise": "plank", "sets": 3, "target": { "min": 60, "max": 60 } }
+      ]
+    },
+    "athlete_day": {
+      "name": "Athlete Day",
+      "type": "activity",
+      "options": [
+        {
+          "id": "five_mile_run",
+          "name": "5-Mile Run",
+          "metric": "distance",
+          "target": 5,
+          "unit": "miles"
+        },
+        {
+          "id": "swim_intervals",
+          "name": "Swim Intervals",
+          "metric": "minutes",
+          "target": 45,
+          "unit": "minutes"
+        },
+        {
+          "id": "basketball",
+          "name": "Basketball",
+          "metric": "activity"
+        },
+        {
+          "id": "long_walk",
+          "name": "Long Walk",
+          "metric": "minutes",
+          "target": 60,
+          "unit": "minutes"
+        },
+        {
+          "id": "walking_golf",
+          "name": "Golf - Walking",
+          "metric": "activity"
+        }
+      ],
+      "blocks": []
     }
   },
-
   "log": [
     {
       "date": "2026-06-24",

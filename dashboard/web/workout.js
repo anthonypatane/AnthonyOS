@@ -8,6 +8,7 @@ let workoutStartTime = null;
 let timerInterval = null;
 let currentWorkoutProgram = null;
 let currentWorkout = null;
+let finishedWorkout = null;
 
 function setText(id, value) {
     const element = document.getElementById(id);
@@ -15,6 +16,14 @@ function setText(id, value) {
     if (element) {
         element.textContent = value;
     }
+}
+
+function getIsoDate(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 }
 
 function formatElapsedTime(totalSeconds) {
@@ -166,6 +175,13 @@ function finishWorkout() {
 
     const timer = document.getElementById("timer");
     const finalTime = timer ? timer.textContent : "00:00:00";
+
+    finishedWorkout = {
+        name: currentWorkout ? currentWorkout.name : "Workout",
+        workoutIds: currentWorkout ? currentWorkout.workoutIds : [],
+        duration: finalTime,
+        sets: [...completedSets]
+    };
 
     showWorkoutSummary(finalTime);
 
@@ -403,6 +419,114 @@ function markSavedSetsInUI() {
     });
 }
 
+function buildSectionHeading(name) {
+    const heading = document.createElement("h2");
+
+    heading.className = "workout-section-heading";
+    heading.textContent = name;
+
+    return heading;
+}
+
+function describeOption(option) {
+    if (!Number.isFinite(option.target)) {
+        return "Log it when you are done";
+    }
+
+    return `Target: ${option.target} ${option.unit || option.metric}`;
+}
+
+function buildActivityCard(workout) {
+    const card = document.createElement("section");
+
+    card.className = "card activity-card";
+
+    const options = (workout.options || [])
+        .map(option => `
+            <div class="activity-option" data-option-id="${option.id}">
+                <div>
+                    <strong>${option.name}</strong>
+                    <p>${describeOption(option)}</p>
+                </div>
+
+                <button type="button" class="log-activity" data-option-id="${option.id}">
+                    Log
+                </button>
+            </div>
+        `)
+        .join("");
+
+    card.innerHTML = `
+        <div class="exercise-header">
+            <div>
+                <h3>Choose Your Activity</h3>
+                <p>Pick one and log it when you finish</p>
+            </div>
+        </div>
+
+        <div class="activity-options">
+            ${options}
+        </div>
+    `;
+
+    attachActivityHandlers(card, workout);
+
+    return card;
+}
+
+function attachActivityHandlers(card, workout) {
+    card.querySelectorAll(".log-activity").forEach(button => {
+        button.addEventListener("click", event => {
+            if (!workoutStartTime) {
+                alert("Start the workout before logging an activity.");
+                return;
+            }
+
+            const optionId = event.currentTarget.dataset.optionId;
+
+            const option = (workout.options || []).find(
+                item => item.id === optionId
+            );
+
+            if (!option) {
+                return;
+            }
+
+            const loggedActivity = {
+                exercise: option.id,
+                setNumber: 1,
+                weight: 0,
+                reps: Number.isFinite(option.target) ? option.target : 1,
+                savedAt: new Date().toISOString()
+            };
+
+            const existingIndex = completedSets.findIndex(
+                set => set.exercise === loggedActivity.exercise
+            );
+
+            if (existingIndex >= 0) {
+                completedSets[existingIndex] = loggedActivity;
+            } else {
+                completedSets.push(loggedActivity);
+            }
+
+            card.querySelectorAll(".activity-option").forEach(row => {
+                row.classList.toggle(
+                    "set-complete",
+                    row.dataset.optionId === optionId
+                );
+            });
+
+            card.querySelectorAll(".log-activity").forEach(other => {
+                other.textContent =
+                    other.dataset.optionId === optionId ? "Logged ✓" : "Log";
+            });
+
+            persistCompletedSets();
+        });
+    });
+}
+
 function renderRestDay(workoutTitle, exerciseList) {
     workoutTitle.textContent = "Rest Day";
     exerciseList.innerHTML = `
@@ -449,27 +573,49 @@ async function loadTodaysWorkout() {
             return;
         }
 
-        const workoutId = workoutIds[0];
-        const workout = program.workouts[workoutId];
-        currentWorkoutProgram = program;
-        currentWorkout = workout;
+        const scheduled = workoutIds
+            .map(id => ({ id, workout: program.workouts[id] }))
+            .filter(item => {
+                if (!item.workout) {
+                    console.warn(`Workout "${item.id}" is not defined.`);
+                    return false;
+                }
 
-        if (!workout) {
-            throw new Error(`Workout "${workoutId}" was not found.`);
+                return true;
+            });
+
+        if (scheduled.length === 0) {
+            throw new Error(`No scheduled workout for ${today} was found.`);
         }
 
-        workoutTitle.textContent = workout.name;
+        currentWorkoutProgram = program;
+        currentWorkout = {
+            name: scheduled.map(item => item.workout.name).join(" + "),
+            workoutIds: scheduled.map(item => item.id)
+        };
+
+        workoutTitle.textContent = currentWorkout.name;
         exerciseList.innerHTML = "";
 
-        workout.blocks.forEach(block => {
-            const exercise = program.exercises[block.exercise];
-
-            if (!exercise) {
-                console.warn(`Exercise "${block.exercise}" is missing.`);
-                return;
+        scheduled.forEach(({ workout }) => {
+            if (scheduled.length > 1) {
+                exerciseList.appendChild(buildSectionHeading(workout.name));
             }
 
-            exerciseList.appendChild(buildExerciseCard(program, block, exercise));
+            if (workout.type === "activity") {
+                exerciseList.appendChild(buildActivityCard(workout));
+            }
+
+            (workout.blocks || []).forEach(block => {
+                const exercise = program.exercises[block.exercise];
+
+                if (!exercise) {
+                    console.warn(`Exercise "${block.exercise}" is missing.`);
+                    return;
+                }
+
+                exerciseList.appendChild(buildExerciseCard(program, block, exercise));
+            });
         });
     } catch (error) {
         console.error(error);
@@ -512,6 +658,12 @@ async function init() {
         finishButton.addEventListener("click", finishWorkout);
     }
 
+    const saveButton = document.getElementById("save-workout");
+
+    if (saveButton) {
+        saveButton.addEventListener("click", saveFinishedWorkout);
+    }
+
     hideWorkoutSummary();
     restoreSession();
 
@@ -525,31 +677,42 @@ if (document.readyState === "loading") {
 } else {
     init();
 }
-document
-    .getElementById("save-workout")
-    .addEventListener("click", () => {
-        if (!currentWorkout) {
-            alert("No active workout found.");
-            return;
-        }
+function saveFinishedWorkout() {
+    if (!finishedWorkout) {
+        alert("Finish a workout before saving it.");
+        return;
+    }
 
-        const totalVolume = completedSets.reduce(
-            (total, set) => total + (set.weight * set.reps),
-            0
-        );
+    if (finishedWorkout.sets.length === 0) {
+        alert("No sets were logged, so there is nothing to save.");
+        return;
+    }
 
-        const workoutRecord = {
-            id: crypto.randomUUID(),
-            date: new Date().toISOString(),
-            workout: currentWorkout.name,
-            duration: document.getElementById("timer").textContent,
-            completedSets: [...completedSets],
-            totalVolume
-        };
+    if (!window.WorkoutStorage) {
+        alert("Workout storage is unavailable.");
+        return;
+    }
 
-        window.WorkoutStorage.saveWorkout(workoutRecord);
+    const totalVolume = finishedWorkout.sets.reduce(
+        (total, set) => total + (set.weight * set.reps),
+        0
+    );
 
-        alert("Workout saved successfully.");
+    const workoutRecord = {
+        id: crypto.randomUUID(),
+        date: getIsoDate(),
+        workout: finishedWorkout.name,
+        workoutIds: finishedWorkout.workoutIds,
+        duration: finishedWorkout.duration,
+        completedSets: [...finishedWorkout.sets],
+        totalVolume
+    };
 
-        console.log("Saved workout:", workoutRecord);
-    });
+    window.WorkoutStorage.saveWorkout(workoutRecord);
+
+    finishedWorkout = null;
+
+    alert("Workout saved successfully.");
+
+    console.log("Saved workout:", workoutRecord);
+}

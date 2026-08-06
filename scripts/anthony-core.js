@@ -91,35 +91,45 @@ async function getTodayWorkout() {
         };
     }
 
-    const workoutId = workoutIds[0];
-    const workout = program.workouts?.[workoutId];
+    const scheduled = workoutIds
+        .map(id => ({ id, workout: program.workouts?.[id] }))
+        .filter(item => Boolean(item.workout));
 
-    if (!workout) {
+    if (scheduled.length === 0) {
         return {
             restDay: false,
             name: "Workout Unavailable",
-            workoutId,
+            workoutId: workoutIds[0],
+            workoutIds,
             exercises: [],
-            error: `Workout "${workoutId}" was not found.`
+            error: `Workout "${workoutIds[0]}" was not found.`
         };
     }
 
-    const exercises = (workout.blocks || []).map(block => {
-        const exercise = program.exercises?.[block.exercise];
+    const exercises = scheduled.flatMap(({ workout }) =>
+        (workout.blocks || []).map(block => {
+            const exercise = program.exercises?.[block.exercise];
 
-        return {
-            id: block.exercise,
-            name: exercise?.name ?? block.exercise,
-            sets: block.sets,
-            target: block.target
-        };
-    });
+            return {
+                id: block.exercise,
+                name: exercise?.name ?? block.exercise,
+                sets: block.sets,
+                target: block.target
+            };
+        })
+    );
+
+    const activities = scheduled.flatMap(({ workout }) =>
+        workout.type === "activity" ? workout.options || [] : []
+    );
 
     return {
         restDay: false,
-        name: workout.name,
-        workoutId,
-        exercises
+        name: scheduled.map(item => item.workout.name).join(" + "),
+        workoutId: scheduled[0].id,
+        workoutIds: scheduled.map(item => item.id),
+        exercises,
+        activities
     };
 }
 
@@ -173,17 +183,93 @@ async function getToday() {
 
         health: {
             steps: 0,
+            stepGoal: 10000,
+            activeCalories: 0,
             sleepHours: null,
             recoveryScore: null
         }
     };
 }
+function getDailyBriefing(today) {
+    const assignmentCount =
+        today.school?.homework?.length ?? 0;
 
+    const steps =
+        today.health?.steps ?? 0;
+
+    const stepGoal =
+        today.health?.stepGoal ?? 10000;
+
+    const activeCalories =
+        today.health?.activeCalories ?? 0;
+
+    let status = {
+        label: "On Track",
+        level: "good"
+    };
+
+    if (assignmentCount >= 3) {
+        status = {
+            label: "Busy Day",
+            level: "warning"
+        };
+    }
+
+    if (assignmentCount >= 5) {
+        status = {
+            label: "High Priority",
+            level: "urgent"
+        };
+    }
+
+    const focusMessage =
+        assignmentCount > 0
+            ? `Complete your next assignment and stay ahead of ${assignmentCount} due item${assignmentCount === 1 ? "" : "s"}.`
+            : today.workout.restDay
+                ? "Use today to recover, hydrate, and prepare for tomorrow."
+                : `Complete your ${today.workout.name} workout.`;
+
+    return {
+        greeting: today.greeting,
+
+        status,
+
+        focus: {
+            title: "Today's Focus",
+            message: focusMessage
+        },
+
+        quickLook: {
+            steps: {
+                current: steps,
+                goal: stepGoal
+            },
+
+            activeCalories: {
+                current: activeCalories,
+                unit: "kcal"
+            },
+
+            homework: {
+                dueCount: assignmentCount
+            }
+        },
+
+        reminder:
+            today.workout.restDay
+                ? "Recover well today."
+                : "Beat your previous performance with good form.",
+
+        quote:
+            "Don't count the days. Make the days count."
+    };
+}
 window.AnthonyCore = {
     getGreeting,
     getDayName,
     getIsoDate,
     loadJson,
     getTodayWorkout,
-    getToday
+    getToday,
+    getDailyBriefing
 };
