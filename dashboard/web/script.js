@@ -33,6 +33,114 @@ updateClock();
 setInterval(updateClock, 1000);
 
 // ==============================
+// Anthony OS Weather
+// ==============================
+
+function describeWeather(code, isDay) {
+    if (code === 0) {
+        return { label: "Clear", icon: isDay ? "☀" : "☾" };
+    }
+
+    if ([1, 2].includes(code)) {
+        return { label: "Partly cloudy", icon: isDay ? "🌤" : "☁" };
+    }
+
+    if (code === 3) {
+        return { label: "Cloudy", icon: "☁" };
+    }
+
+    if ([45, 48].includes(code)) {
+        return { label: "Foggy", icon: "≋" };
+    }
+
+    if ([51, 53, 55, 56, 57].includes(code)) {
+        return { label: "Drizzle", icon: "🌦" };
+    }
+
+    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+        return { label: "Rain", icon: "🌧" };
+    }
+
+    if ([71, 73, 75, 77, 85, 86].includes(code)) {
+        return { label: "Snow", icon: "❄" };
+    }
+
+    if ([95, 96, 99].includes(code)) {
+        return { label: "Thunderstorms", icon: "⚡" };
+    }
+
+    return { label: "Current conditions", icon: "☁" };
+}
+
+async function loadWeather() {
+    try {
+        const settingsResponse = await fetch("../../data/system/location.json");
+
+        if (!settingsResponse.ok) {
+            throw new Error(`Could not load location settings: ${settingsResponse.status}`);
+        }
+
+        const location = await settingsResponse.json();
+        const searchName = `${location.city}, ${location.region}`;
+        const geocodingUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+
+        geocodingUrl.search = new URLSearchParams({
+            name: searchName,
+            count: "1",
+            language: "en",
+            format: "json",
+            countryCode: location.countryCode
+        });
+
+        const locationResponse = await fetch(geocodingUrl);
+
+        if (!locationResponse.ok) {
+            throw new Error(`Could not find weather location: ${locationResponse.status}`);
+        }
+
+        const locationData = await locationResponse.json();
+        const match = locationData.results?.[0];
+
+        if (!match) {
+            throw new Error(`No weather location matched ${searchName}.`);
+        }
+
+        const forecastUrl = new URL("https://api.open-meteo.com/v1/forecast");
+
+        forecastUrl.search = new URLSearchParams({
+            latitude: match.latitude,
+            longitude: match.longitude,
+            current: "temperature_2m,apparent_temperature,weather_code,is_day",
+            temperature_unit: "fahrenheit",
+            timezone: "auto"
+        });
+
+        const weatherResponse = await fetch(forecastUrl);
+
+        if (!weatherResponse.ok) {
+            throw new Error(`Could not load current weather: ${weatherResponse.status}`);
+        }
+
+        const weather = await weatherResponse.json();
+        const current = weather.current;
+        const condition = describeWeather(current.weather_code, current.is_day === 1);
+
+        setText("weather-icon", condition.icon);
+        setText("weather-temperature", `${Math.round(current.temperature_2m)}°`);
+        setText(
+            "weather-condition",
+            `${condition.label} · Feels like ${Math.round(current.apparent_temperature)}°`
+        );
+        setText("weather-location", `${match.name}, ${match.admin1}`);
+    } catch (error) {
+        console.error("Weather failed to load:", error);
+        setText("weather-temperature", "--°");
+        setText("weather-condition", "Weather unavailable");
+        setText("weather-location", "Check location or internet connection");
+    }
+}
+
+// ==============================
 // Anthony OS Workout Card
 // ==============================
 
@@ -166,7 +274,15 @@ function setText(id, value) {
     }
 }
 
-function renderNutritionCards(today) {
+function formatClassTime(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+
+    return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
+function renderDashboardCards(today) {
     setText(
         "protein-value",
         `${today.nutrition.protein} / ${today.nutrition.proteinGoal} g`
@@ -180,6 +296,58 @@ function renderNutritionCards(today) {
     setText(
         "steps-value",
         `${today.health.steps.toLocaleString()} / ${today.health.stepGoal.toLocaleString()}`
+    );
+
+    setText(
+        "calories-value",
+        `${today.health.activeCalories.toLocaleString()} kcal`
+    );
+
+    setText(
+        "sleep-value",
+        today.health.sleepHours === null
+            ? "Not connected"
+            : `${today.health.sleepHours} hr`
+    );
+
+    setText(
+        "recovery-value",
+        today.health.recoveryScore === null
+            ? "--"
+            : `${today.health.recoveryScore}%`
+    );
+
+    const classes = today.school?.classes ?? [];
+    const onlineClassCount = today.school?.onlineClasses?.length ?? 0;
+    const homeworkCount = today.school?.homework?.length ?? 0;
+
+    if (classes.length > 0) {
+        const firstClass = classes[0];
+
+        setText(
+            "classes-summary",
+            `${formatClassTime(firstClass.start)} · ${firstClass.code}`
+        );
+
+        setText(
+            "classes-detail",
+            classes.length === 1
+                ? `${firstClass.name} · ${firstClass.location}`
+                : `Next: ${classes[1].code} at ${formatClassTime(classes[1].start)}`
+        );
+    } else {
+        setText("classes-summary", "Online coursework");
+        setText(
+            "classes-detail",
+            `${onlineClassCount} online course${onlineClassCount === 1 ? "" : "s"} available`
+        );
+    }
+
+    setText(
+        "homework-summary",
+        homeworkCount === 0
+            ? "Nothing due"
+            : `${homeworkCount} item${homeworkCount === 1 ? "" : "s"} due`
     );
 }
 
@@ -224,8 +392,6 @@ function renderBriefing(today, briefing) {
         `📚 Assignments: ${briefing.quickLook.homework.dueCount} Due`
     );
 
-    setText("briefing-reminder", briefing.reminder);
-    setText("briefing-quote", `"${briefing.quote}"`);
 }
 
 async function loadDashboard() {
@@ -238,7 +404,7 @@ async function loadDashboard() {
         const today = await window.AnthonyCore.getToday();
         const briefing = window.AnthonyCore.getDailyBriefing(today);
 
-        renderNutritionCards(today);
+        renderDashboardCards(today);
         renderBriefing(today, briefing);
     } catch (error) {
         console.error("Dashboard failed to load:", error);
@@ -247,3 +413,4 @@ async function loadDashboard() {
 
 loadWorkoutCard();
 loadDashboard();
+loadWeather();

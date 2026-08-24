@@ -134,6 +134,42 @@ async function getTodayWorkout() {
 }
 
 /**
+ * Return scheduled and online classes for the current day.
+ */
+async function getTodayClasses(day = getDayName()) {
+    const school = await loadJson(
+        "../../data/school/classes.json"
+    );
+
+    const classes = school.classes || [];
+    const scheduled = [];
+
+    classes.forEach(course => {
+        (course.meetings || []).forEach(meeting => {
+            if (meeting.days?.includes(day)) {
+                scheduled.push({
+                    id: course.id,
+                    code: course.code,
+                    name: course.name,
+                    format: course.format,
+                    start: meeting.start,
+                    end: meeting.end,
+                    location: meeting.location
+                });
+            }
+        });
+    });
+
+    scheduled.sort((a, b) => a.start.localeCompare(b.start));
+
+    return {
+        semester: school.semester,
+        scheduled,
+        online: classes.filter(course => course.format === "online")
+    };
+}
+
+/**
  * Return the complete "today" object.
  *
  * More modules will be added later:
@@ -148,6 +184,7 @@ async function getToday() {
     const now = new Date();
 
     let workout;
+    let classes;
 
     try {
         workout = await getTodayWorkout();
@@ -163,6 +200,19 @@ async function getToday() {
         };
     }
 
+    try {
+        classes = await getTodayClasses(getDayName(now));
+    } catch (error) {
+        console.error("Anthony Core school error:", error);
+
+        classes = {
+            semester: null,
+            scheduled: [],
+            online: [],
+            error: error.message
+        };
+    }
+
     return {
         date: getIsoDate(now),
         day: getDayName(now),
@@ -170,7 +220,9 @@ async function getToday() {
         workout,
 
         school: {
-            classes: [],
+            classes: classes.scheduled,
+            onlineClasses: classes.online,
+            semester: classes.semester,
             homework: []
         },
 
@@ -253,15 +305,7 @@ function getDailyBriefing(today) {
             homework: {
                 dueCount: assignmentCount
             }
-        },
-
-        reminder:
-            today.workout.restDay
-                ? "Recover well today."
-                : "Beat your previous performance with good form.",
-
-        quote:
-            "Don't count the days. Make the days count."
+        }
     };
 }
 window.AnthonyCore = {
@@ -270,6 +314,7 @@ window.AnthonyCore = {
     getIsoDate,
     loadJson,
     getTodayWorkout,
+    getTodayClasses,
     getToday,
     getDailyBriefing
 };

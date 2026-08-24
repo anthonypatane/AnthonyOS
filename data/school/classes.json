@@ -1,0 +1,61 @@
+{
+  "semester": "Fall 2026",
+  "classes": [
+    {
+      "id": "csci-145-d1",
+      "code": "CSCI 145",
+      "name": "Intermediate Programming",
+      "format": "online",
+      "meetings": []
+    },
+    {
+      "id": "csci-211-d1",
+      "code": "CSCI 211",
+      "name": "Computer Infrastructure",
+      "format": "online",
+      "meetings": []
+    },
+    {
+      "id": "csci-225-01",
+      "code": "CSCI 225",
+      "name": "Intro Relational Database/SQL",
+      "format": "hybrid",
+      "meetings": [
+        {
+          "days": ["tuesday"],
+          "start": "13:40",
+          "end": "14:55",
+          "location": "Hybrid"
+        }
+      ]
+    },
+    {
+      "id": "csci-284-01",
+      "code": "CSCI 284",
+      "name": "Applied Machine Learning",
+      "format": "in-person",
+      "meetings": [
+        {
+          "days": ["tuesday", "thursday"],
+          "start": "10:50",
+          "end": "12:05",
+          "location": "In person"
+        }
+      ]
+    },
+    {
+      "id": "csci-416-d1",
+      "code": "CSCI 416",
+      "name": "Linux System Administration",
+      "format": "online",
+      "meetings": []
+    },
+    {
+      "id": "csci-444-d1",
+      "code": "CSCI 444",
+      "name": "Human Computer Interaction",
+      "format": "online",
+      "meetings": []
+    }
+  ]
+}

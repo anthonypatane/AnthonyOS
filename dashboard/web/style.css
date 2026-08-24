@@ -9,6 +9,8 @@
 
     --stroke: rgba(255, 255, 255, 0.1);
     --stroke-hover: rgba(255, 255, 255, 0.18);
+    --blue: #8eacff;
+    --green: #7ee2aa;
 }
 
 * {
@@ -18,8 +20,10 @@
 }
 
 body {
+    height: 100vh;
     min-height: 100vh;
-    padding: 32px;
+    padding: 36px 48px;
+    overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--text);
 
@@ -42,7 +46,7 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     gap: 24px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .title-section h1 {
@@ -51,7 +55,7 @@ body {
 }
 
 .subtitle {
-    margin-top: 8px;
+    margin-top: 4px;
     color: var(--muted);
     font-size: 1rem;
 }
@@ -73,13 +77,268 @@ body {
 
 #dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(190px, 1fr));
+    gap: 22px;
+    height: calc(100vh - 172px);
+}
+
+#command-center {
+    grid-column: span 2;
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+    background:
+        linear-gradient(135deg, rgba(80, 120, 255, 0.2), transparent 65%),
+        var(--card);
+}
+
+.briefing-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.briefing-label {
+    margin-bottom: 8px;
+    color: var(--blue);
+    font-size: 0.85rem !important;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+#briefing-greeting {
+    font-size: clamp(1.8rem, 2.4vw, 3rem);
+    line-height: 1.1;
+}
+
+#briefing-date {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.1vw, 1.25rem);
+}
+
+#briefing-status {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border: 1px solid rgba(80, 220, 140, 0.4);
+    border-radius: 999px;
+    background: rgba(80, 220, 140, 0.12);
+    color: #7ee2aa;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+#briefing-status[data-level="warning"] {
+    border-color: rgba(255, 190, 80, 0.45);
+    background: rgba(255, 190, 80, 0.12);
+    color: #ffd080;
+}
+
+#briefing-status[data-level="urgent"] {
+    border-color: rgba(255, 90, 110, 0.45);
+    background: rgba(255, 90, 110, 0.12);
+    color: #ff98a6;
+}
+
+.briefing-focus {
+    padding: 24px;
+    border: 1px solid rgba(142, 172, 255, 0.22);
+    border-radius: 20px;
+    background: rgba(8, 12, 24, 0.38);
+}
+
+.briefing-focus h3 {
+    margin-bottom: 12px;
+    color: var(--muted);
+}
+
+#briefing-focus {
+    color: var(--text);
+    font-size: clamp(1.7rem, 2.2vw, 2.65rem);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.briefing-quick-look {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.briefing-quick-look p {
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.055);
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
+    line-height: 1.35;
+}
+
+.dashboard-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.card-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.card-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 11px;
+    background: rgba(142, 172, 255, 0.12);
+    color: var(--blue);
+    font-size: 1.15rem;
+}
+
+.card-kicker {
+    color: var(--muted) !important;
+    font-size: clamp(0.78rem, 0.85vw, 0.95rem) !important;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    line-height: 1.2 !important;
+    text-transform: uppercase;
+}
+
+.card-value {
+    color: var(--text) !important;
+    font-size: clamp(2.1rem, 2.8vw, 3.4rem) !important;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+    line-height: 1.05 !important;
+}
+
+.card-value-small {
+    font-size: clamp(1.35rem, 1.7vw, 2rem) !important;
+    letter-spacing: -0.025em;
+}
+
+.card-detail {
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--muted) !important;
+    font-size: clamp(0.78rem, 0.85vw, 0.95rem) !important;
+    line-height: 1.3 !important;
+}
+
+.weather-condition {
+    margin-top: 8px;
+    color: var(--body-text) !important;
+    font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+    font-weight: 600;
+    line-height: 1.25 !important;
+}
+
+#workout-name {
+    color: var(--text);
+    font-size: clamp(1.25rem, 1.45vw, 1.75rem);
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+#workout-goals {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+
+.workout-goal {
+    display: grid;
+    gap: 2px;
+    padding-top: 7px;
+    border-top: 1px solid var(--stroke);
+    color: var(--muted);
+    font-size: clamp(0.7rem, 0.72vw, 0.82rem);
+}
+
+.workout-goal strong {
+    overflow: hidden;
+    color: var(--body-text);
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workout-goal:nth-child(n + 3) {
+    display: none;
+}
+
+.recovery-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: auto;
+}
+
+.recovery-values div,
+.health-metric {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 15px;
+    border-radius: 17px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.metric-label {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: clamp(0.7rem, 0.75vw, 0.85rem);
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recovery-values strong,
+.health-metric strong {
+    overflow: hidden;
+    color: var(--text);
+    font-size: clamp(1rem, 1.25vw, 1.5rem);
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#health-card {
+    grid-column: span 2;
+}
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    flex: 1;
+}
+
+.album-placeholder {
+    display: grid;
+    width: clamp(46px, 3.8vw, 64px);
+    aspect-ratio: 1;
+    margin-bottom: 12px;
+    place-items: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1ed760, #116530);
+    color: #07140b;
+    font-size: 1.8rem;
+    font-weight: 800;
 }
 
 .card {
-    min-height: 170px;
-    padding: 24px;
+    min-width: 0;
+    padding: 28px;
 
     border: 1px solid var(--stroke);
     border-radius: 24px;
@@ -105,14 +364,45 @@ body {
 
 .card h3 {
     margin-bottom: 18px;
-    font-size: 1.1rem;
+    font-size: clamp(1.15rem, 1.25vw, 1.5rem);
     font-weight: 600;
 }
 
 .card p {
     color: var(--body-text);
-    font-size: 1.35rem;
+    font-size: clamp(1.35rem, 1.5vw, 1.8rem);
     line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+    body {
+        height: auto;
+        padding: 28px;
+        overflow: auto;
+    }
+
+    #dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+        height: auto;
+        min-height: auto;
+    }
+
+    #command-center {
+        grid-row: auto;
+    }
+
+    .briefing-quick-look {
+        grid-template-columns: 1fr;
+    }
+
+    #health-card {
+        grid-column: span 2;
+    }
+
+    .health-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .workout-section-heading {
@@ -166,6 +456,22 @@ body {
 
     #clock-container {
         text-align: left;
+    }
+
+    #dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #command-center {
+        grid-column: auto;
+    }
+
+    #health-card {
+        grid-column: auto;
+    }
+
+    .briefing-heading {
+        flex-direction: column;
     }
 }
 
