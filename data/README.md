@@ -10,6 +10,7 @@ Examples include:
 - Class schedules
 - Nutrition and water logs
 - Smart-home device information
+- Apple Health sleep and recovery information
 - Daily priorities
 
 The dashboard, Alexa routines, automations, and future AI features should all read from this central data layer.

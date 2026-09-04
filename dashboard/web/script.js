@@ -174,7 +174,9 @@ async function loadWorkoutCard() {
     }
 
     try {
-        const response = await fetch("../../data/fitness/workout-plan.json");
+        const response = await fetch("../../data/fitness/workout-plan.json", {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
             throw new Error(`Could not load workout data: ${response.status}`);
@@ -209,9 +211,14 @@ async function loadWorkoutCard() {
             throw new Error(`No scheduled workout for ${today} was found.`);
         }
 
-        workoutName.textContent = scheduled
+        const exerciseCount = scheduled.reduce(
+            (count, workout) => count + (workout.blocks?.length || 0),
+            0
+        );
+
+        workoutName.textContent = `${scheduled
             .map(workout => workout.name)
-            .join(" + ");
+            .join(" + ")} · ${exerciseCount} exercises`;
 
         workoutGoals.innerHTML = "";
 
@@ -282,6 +289,185 @@ function formatClassTime(time) {
     return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 
+function formatAssignmentDue(due) {
+    return new Date(due).toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+    });
+}
+
+function formatAssignmentTime(due) {
+    return new Date(due).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit"
+    });
+}
+
+function createAssignmentRow(assignment, dueToday = false) {
+    const row = document.createElement("div");
+    const isComplete = assignment.status === "completed";
+    const dueLabel = dueToday
+        ? `Today ${formatAssignmentTime(assignment.due)}`
+        : formatAssignmentDue(assignment.due);
+
+    row.className = "assignment-row";
+    row.innerHTML = `
+        <div class="assignment-copy">
+            <strong>${assignment.course} · ${assignment.title}</strong>
+            <span>${dueLabel}</span>
+        </div>
+        <span class="assignment-status ${isComplete ? "is-complete" : "is-open"}">
+            ${isComplete ? "✓ Complete" : "○ Not Yet"}
+        </span>
+    `;
+
+    return row;
+}
+
+function appendAssignmentSection(list, title, assignments, dueToday = false) {
+    const heading = document.createElement("p");
+
+    heading.className = "assignment-section-title";
+    heading.textContent = `${title} · ${assignments.length}`;
+    list.appendChild(heading);
+
+    assignments.forEach(assignment => {
+        list.appendChild(createAssignmentRow(assignment, dueToday));
+    });
+}
+
+function appendCourseSummary(list, courses) {
+    const heading = document.createElement("p");
+
+    heading.className = "assignment-section-title";
+    heading.textContent = "All Classes";
+    list.appendChild(heading);
+
+    courses.forEach(course => {
+        const row = document.createElement("div");
+
+        row.className = "course-progress-row";
+        row.innerHTML = `
+            <strong>${course.course}</strong>
+            <span><b>${course.completed} done</b> · ${course.remaining} left</span>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function renderHomeworkCard(overview) {
+    const list = document.getElementById("homework-list");
+    const courseSummary = overview?.courseSummary ?? [];
+    const overdue = overview?.overdue ?? [];
+    const dueToday = overview?.dueToday ?? [];
+    const upcoming = overview?.upcoming ?? [];
+    const recentCompleted = overview?.recentCompleted ?? [];
+    const completedCount = courseSummary.reduce(
+        (total, course) => total + course.completed,
+        0
+    );
+    const incompleteCount = courseSummary.reduce(
+        (total, course) => total + course.remaining,
+        0
+    );
+
+    setText(
+        "homework-summary",
+        `${completedCount} done · ${incompleteCount} still need done`
+    );
+    setText(
+        "homework-detail",
+        incompleteCount === 0
+            ? "Everything shown is complete"
+            : `Scroll for all · ${incompleteCount} assignment${incompleteCount === 1 ? "" : "s"} not yet complete`
+    );
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    if (courseSummary.length === 0) {
+        const empty = document.createElement("p");
+
+        empty.className = "homework-empty";
+        empty.textContent = "Nothing due in the next 7 days.";
+        list.appendChild(empty);
+        return;
+    }
+
+    appendCourseSummary(list, courseSummary);
+
+    if (overdue.length > 0) {
+        appendAssignmentSection(list, "Overdue — Do Now", overdue);
+    }
+
+    if (dueToday.length > 0) {
+        appendAssignmentSection(list, "Due Today", dueToday, true);
+    }
+
+    if (upcoming.length > 0) {
+        appendAssignmentSection(list, "Due Next 7 Days", upcoming);
+    }
+
+    if (recentCompleted.length > 0) {
+        appendAssignmentSection(list, "Recently Completed", recentCompleted);
+    }
+}
+
+function classTimeToMinutes(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+
+    return (hours * 60) + minutes;
+}
+
+function renderClassesCard(classes, onlineClassCount, now = new Date()) {
+    const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+    const currentClass = classes.find(course => {
+        const start = classTimeToMinutes(course.start);
+        const end = classTimeToMinutes(course.end);
+
+        return currentMinutes >= start && currentMinutes < end;
+    });
+
+    if (currentClass) {
+        setText("classes-summary", `Now · ${currentClass.code}`);
+        setText(
+            "classes-detail",
+            `Until ${formatClassTime(currentClass.end)} · ${currentClass.location}`
+        );
+        return;
+    }
+
+    const nextClass = classes.find(
+        course => classTimeToMinutes(course.start) > currentMinutes
+    );
+
+    if (nextClass) {
+        setText("classes-summary", `Next · ${nextClass.code}`);
+        setText(
+            "classes-detail",
+            `${formatClassTime(nextClass.start)}–${formatClassTime(nextClass.end)} · ${nextClass.location}`
+        );
+        return;
+    }
+
+    if (classes.length > 0) {
+        setText("classes-summary", "No more classes");
+    } else {
+        setText("classes-summary", "Online coursework");
+    }
+
+    setText(
+        "classes-detail",
+        `${onlineClassCount} online course${onlineClassCount === 1 ? "" : "s"} available`
+    );
+}
+
 function renderDashboardCards(today) {
     setText(
         "protein-value",
@@ -319,36 +505,9 @@ function renderDashboardCards(today) {
 
     const classes = today.school?.classes ?? [];
     const onlineClassCount = today.school?.onlineClasses?.length ?? 0;
-    const homeworkCount = today.school?.homework?.length ?? 0;
 
-    if (classes.length > 0) {
-        const firstClass = classes[0];
-
-        setText(
-            "classes-summary",
-            `${formatClassTime(firstClass.start)} · ${firstClass.code}`
-        );
-
-        setText(
-            "classes-detail",
-            classes.length === 1
-                ? `${firstClass.name} · ${firstClass.location}`
-                : `Next: ${classes[1].code} at ${formatClassTime(classes[1].start)}`
-        );
-    } else {
-        setText("classes-summary", "Online coursework");
-        setText(
-            "classes-detail",
-            `${onlineClassCount} online course${onlineClassCount === 1 ? "" : "s"} available`
-        );
-    }
-
-    setText(
-        "homework-summary",
-        homeworkCount === 0
-            ? "Nothing due"
-            : `${homeworkCount} item${homeworkCount === 1 ? "" : "s"} due`
-    );
+    renderClassesCard(classes, onlineClassCount);
+    renderHomeworkCard(today.school?.assignmentOverview);
 }
 
 function renderBriefing(today, briefing) {
@@ -414,3 +573,7 @@ async function loadDashboard() {
 loadWorkoutCard();
 loadDashboard();
 loadWeather();
+
+setInterval(loadDashboard, 60 * 1000);
+setInterval(loadWorkoutCard, 60 * 1000);
+setInterval(loadWeather, 15 * 60 * 1000);

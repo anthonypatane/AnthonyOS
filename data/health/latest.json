@@ -1,0 +1,21 @@
+{
+  "source": "apple-health",
+  "lastUpdated": null,
+  "sleep": {
+    "date": null,
+    "bedtime": null,
+    "wakeTime": null,
+    "totalHours": null,
+    "stages": {
+      "awakeMinutes": null,
+      "remMinutes": null,
+      "coreMinutes": null,
+      "deepMinutes": null
+    }
+  },
+  "activity": {
+    "date": null,
+    "steps": 0,
+    "activeCalories": 0
+  }
+}

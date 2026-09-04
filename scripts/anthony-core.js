@@ -60,7 +60,9 @@ function getIsoDate(date = new Date()) {
  * Load JSON data from a project file.
  */
 async function loadJson(path) {
-    const response = await fetch(path);
+    const response = await fetch(path, {
+        cache: "no-store"
+    });
 
     if (!response.ok) {
         throw new Error(
@@ -170,6 +172,107 @@ async function getTodayClasses(day = getDayName()) {
 }
 
 /**
+ * Return open assignments due during the next seven days.
+ */
+async function getUpcomingAssignments(now = new Date(), daysAhead = 7) {
+    const school = await loadJson(
+        "../../data/school/assignments.json"
+    );
+    const cutoff = new Date(now);
+
+    cutoff.setDate(cutoff.getDate() + daysAhead);
+
+    return (school.assignments || [])
+        .filter(assignment => assignment.status === "open")
+        .filter(assignment => {
+            const due = new Date(assignment.due);
+
+            return due >= now && due <= cutoff;
+        })
+        .sort((a, b) => new Date(a.due) - new Date(b.due));
+}
+
+/**
+ * Return every assignment due today or during the next seven days.
+ * Completed assignments remain visible so the dashboard can show their status.
+ */
+async function getAssignmentOverview(now = new Date(), daysAhead = 7) {
+    const school = await loadJson(
+        "../../data/school/assignments.json"
+    );
+    const startOfToday = new Date(now);
+    const endOfToday = new Date(now);
+    const cutoff = new Date(now);
+
+    startOfToday.setHours(0, 0, 0, 0);
+    endOfToday.setHours(23, 59, 59, 999);
+    cutoff.setDate(cutoff.getDate() + daysAhead);
+    cutoff.setHours(23, 59, 59, 999);
+
+    const allAssignments = (school.assignments || [])
+        .slice()
+        .sort((a, b) => new Date(a.due) - new Date(b.due));
+    const assignments = allAssignments
+        .filter(assignment => {
+            const due = new Date(assignment.due);
+
+            return due >= startOfToday && due <= cutoff;
+        })
+        .sort((a, b) => new Date(a.due) - new Date(b.due));
+
+    const courseSummary = Object.values(allAssignments.reduce((summary, assignment) => {
+        if (!summary[assignment.course]) {
+            summary[assignment.course] = {
+                course: assignment.course,
+                completed: 0,
+                remaining: 0
+            };
+        }
+
+        if (assignment.status === "completed") {
+            summary[assignment.course].completed += 1;
+        } else {
+            summary[assignment.course].remaining += 1;
+        }
+
+        return summary;
+    }, {})).sort((a, b) => a.course.localeCompare(b.course));
+
+    return {
+        courseSummary,
+        overdue: allAssignments.filter(assignment =>
+            assignment.status !== "completed" && new Date(assignment.due) < startOfToday
+        ),
+        dueToday: assignments.filter(assignment =>
+            new Date(assignment.due) <= endOfToday
+        ),
+        upcoming: assignments.filter(assignment =>
+            new Date(assignment.due) > endOfToday
+        ),
+        recentCompleted: allAssignments
+            .filter(assignment => assignment.status === "completed")
+            .sort((a, b) => new Date(b.due) - new Date(a.due))
+            .slice(0, 8)
+    };
+}
+
+/**
+ * Return the newest health record imported from Apple Health.
+ */
+async function getLatestHealth() {
+    const health = await loadJson(
+        "../../data/health/latest.json"
+    );
+
+    return {
+        source: health.source,
+        lastUpdated: health.lastUpdated,
+        sleep: health.sleep || {},
+        activity: health.activity || {}
+    };
+}
+
+/**
  * Return the complete "today" object.
  *
  * More modules will be added later:
@@ -185,6 +288,9 @@ async function getToday() {
 
     let workout;
     let classes;
+    let homework;
+    let assignmentOverview;
+    let importedHealth;
 
     try {
         workout = await getTodayWorkout();
@@ -201,6 +307,26 @@ async function getToday() {
     }
 
     try {
+        homework = await getUpcomingAssignments(now);
+    } catch (error) {
+        console.error("Anthony Core assignment error:", error);
+        homework = [];
+    }
+
+    try {
+        assignmentOverview = await getAssignmentOverview(now);
+    } catch (error) {
+        console.error("Anthony Core assignment overview error:", error);
+        assignmentOverview = {
+            courseSummary: [],
+            overdue: [],
+            dueToday: [],
+            upcoming: [],
+            recentCompleted: []
+        };
+    }
+
+    try {
         classes = await getTodayClasses(getDayName(now));
     } catch (error) {
         console.error("Anthony Core school error:", error);
@@ -210,6 +336,18 @@ async function getToday() {
             scheduled: [],
             online: [],
             error: error.message
+        };
+    }
+
+    try {
+        importedHealth = await getLatestHealth();
+    } catch (error) {
+        console.error("Anthony Core health import error:", error);
+        importedHealth = {
+            source: "apple-health",
+            lastUpdated: null,
+            sleep: {},
+            activity: {}
         };
     }
 
@@ -223,7 +361,8 @@ async function getToday() {
             classes: classes.scheduled,
             onlineClasses: classes.online,
             semester: classes.semester,
-            homework: []
+            homework,
+            assignmentOverview
         },
 
         nutrition: {
@@ -234,10 +373,13 @@ async function getToday() {
         },
 
         health: {
-            steps: 0,
+            steps: importedHealth.activity.steps ?? 0,
             stepGoal: 10000,
-            activeCalories: 0,
-            sleepHours: null,
+            activeCalories: importedHealth.activity.activeCalories ?? 0,
+            sleepHours: importedHealth.sleep.totalHours ?? null,
+            sleep: importedHealth.sleep,
+            source: importedHealth.source,
+            lastUpdated: importedHealth.lastUpdated,
             recoveryScore: null
         }
     };
@@ -315,6 +457,9 @@ window.AnthonyCore = {
     loadJson,
     getTodayWorkout,
     getTodayClasses,
+    getUpcomingAssignments,
+    getAssignmentOverview,
+    getLatestHealth,
     getToday,
     getDailyBriefing
 };

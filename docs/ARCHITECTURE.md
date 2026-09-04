@@ -47,3 +47,11 @@ Outlook | Spotify | Alexa | Home Assistant | Weather | Health Data
           |                 |               |
           v                 v               v
       Dashboard          Alexa          Smart Home
+```
+
+## Local Health Receiver
+
+During development, `server/anthony-server.js` serves the dashboard and accepts
+private Apple Health updates at `POST /api/health`. The receiver stores the
+latest sleep, steps, and active-calorie record in `data/health/latest.json` so
+Anthony Core and every future interface can use the same health data.
